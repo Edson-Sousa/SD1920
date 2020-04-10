@@ -1,0 +1,14 @@
+sd1920/trab1/impl/srv/rest/MessageRestServer.class
+sd1920/trab1/impl/clt/rest/RestMessageClient.class
+sd1920/trab1/api/rest/MessageService.class
+sd1920/trab1/api/rest/UserService.class
+sd1920/trab1/api/soap/MessageServiceSoap.class
+sd1920/trab1/impl/srv/rest/UserRestResource.class
+sd1920/trab1/api/soap/MessagesException.class
+sd1920/trab1/impl/srv/rest/UserRestServer.class
+sd1920/trab1/impl/clt/rest/RestUserClient.class
+sd1920/trab1/api/User.class
+sd1920/trab1/api/Message.class
+sd1920/trab1/impl/srv/rest/MessageRestResource.class
+sd1920/trab1/api/soap/UserServiceSoap.class
+sd1920/trab1/discovery/Discovery.class

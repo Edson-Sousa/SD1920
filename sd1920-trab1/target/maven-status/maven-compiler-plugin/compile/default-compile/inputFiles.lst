@@ -1,0 +1,14 @@
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/impl/srv/rest/UserRestServer.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/discovery/Discovery.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/soap/UserServiceSoap.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/rest/MessageService.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/impl/srv/rest/MessageRestServer.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/soap/MessagesException.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/User.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/Message.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/rest/UserService.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/impl/srv/rest/MessageRestResource.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/impl/clt/rest/RestUserClient.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/impl/clt/rest/RestMessageClient.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/impl/srv/rest/UserRestResource.java
+/home/edson/eclipse-workspace/sd/sd1920-trab1/src/sd1920/trab1/api/soap/MessageServiceSoap.java
