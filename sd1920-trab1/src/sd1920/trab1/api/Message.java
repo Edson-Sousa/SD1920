@@ -7,6 +7,7 @@ import java.util.Set;
  * Represents a message in the system.
  */
 public class Message {
+	//asdkajsdkjasd
 
 	private long id;
 	private String sender;
