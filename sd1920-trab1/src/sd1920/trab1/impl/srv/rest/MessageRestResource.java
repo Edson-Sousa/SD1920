@@ -16,13 +16,13 @@ import javax.ws.rs.core.Response.Status;
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.rest.MessageService;
 import sd1920.trab1.discovery.Discovery;
-import sd1920.trab1.impl.clt.rest.RestUserClient;
+import sd1920.trab1.impl.clt.rest_errado_paraUsoDoCode.RestUserClient;
 
 @Singleton
 public class MessageRestResource implements MessageService {
 
 	private Random randomNumberGenerator;
-	
+
 	private final ConcurrentMap<Long, Message> allMessages = new ConcurrentHashMap<Long, Message>();
 	private final ConcurrentMap<String, Set<Long>> userInboxs = new ConcurrentHashMap<String, Set<Long>>();
 
@@ -39,12 +39,11 @@ public class MessageRestResource implements MessageService {
 			Log.info("Message was rejected due to lack of recepients.");
 			throw new WebApplicationException( Status.CONFLICT );
 		}
-		
-		//TODO: verifica se user e password sao validos
+
 		URI[] srvURI = Discovery.knownUrisOf("UserService");
 		RestUserClient ruc = new RestUserClient(srvURI[0]);
 		if(ruc.getUser(msg.getSender(), pwd) == null) {
-			Log.info("user does not exist or if the pwd is not correct.");
+			Log.info("User does not exist or if the pwd is not correct.");
 			throw new WebApplicationException( Status.FORBIDDEN );
 		}
 
@@ -65,7 +64,7 @@ public class MessageRestResource implements MessageService {
 				userInboxs.get(recipient).add(newID);
 			}
 		}
-			
+
 		Log.info("Recorded message with identifier: " + newID);
 		return newID;
 	}
@@ -73,19 +72,18 @@ public class MessageRestResource implements MessageService {
 	@Override
 	public Message getMessage(String user, long mid, String pwd) {
 		Log.info("Received request for message with id: "+ mid);
-		
+
 		URI[] srvURI = Discovery.knownUrisOf("UserService");
 		RestUserClient ruc = new RestUserClient(srvURI[0]);
 		if (ruc.getUser(user, pwd) == null) {
-			Log.info("user does not exist or if the pwd is not correct.");
+			Log.info("User does not exist or if the pwd is not correct.");
 			throw new WebApplicationException( Status.FORBIDDEN );
 		}
-		
+
 		Message m = null;
-		//TODO: verificar mensagem no inbox do user
 		synchronized (this) {
-			 if (userInboxs.containsValue(mid))
-				 m = allMessages.get(mid);
+			if (userInboxs.get(user).contains(mid))
+				m = allMessages.get(mid);
 		}
 		if (m == null) {
 			Log.info("Requested message does not exist.");
@@ -97,20 +95,27 @@ public class MessageRestResource implements MessageService {
 
 	@Override
 	public List<Long> getMessages(String user, String pwd) {
-		// TODO Auto-generated method stub
+		Log.info("Received request for all the messages of user: " + user);
+
+		URI[] srvURI = Discovery.knownUrisOf("UserService");
+		RestUserClient ruc = new RestUserClient(srvURI[0]);
+		if (ruc.getUser(user, pwd) == null) {
+			Log.info("User does not exist or if the pwd is not correct.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
 		return null;
 	}
 
 	@Override
 	public void removeFromUserInbox(String user, long mid, String pwd) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteMessage(String user, long mid, String pwd) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
