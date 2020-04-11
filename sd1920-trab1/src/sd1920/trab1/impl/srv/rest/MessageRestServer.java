@@ -39,7 +39,7 @@ public class MessageRestServer {
 
 			// More code can be executed here...
 			Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
-			//TODO: ?
+			//TODO: messageServer
 			discovery.start();
 	}
 

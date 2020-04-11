@@ -1,6 +1,7 @@
 package sd1920.trab1.impl.srv.rest;
 
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -22,40 +23,76 @@ public class MessageRestResource implements MessageService {
 
 	private Random randomNumberGenerator;
 	
-	protected final ConcurrentMap<Long, Message> allMessages;
-	protected final ConcurrentMap<String, Set<Long>> userInboxs;
+	private final ConcurrentMap<Long, Message> allMessages = new ConcurrentHashMap<Long, Message>();
+	private final ConcurrentMap<String, Set<Long>> userInboxs = new ConcurrentHashMap<String, Set<Long>>();
 
 	private static Logger Log = Logger.getLogger(MessageRestResource.class.getName());
 
 	public MessageRestResource() {
 		this.randomNumberGenerator = new Random(System.currentTimeMillis());
-		this.allMessages = new ConcurrentHashMap<Long, Message>();
-		this.userInboxs = new ConcurrentHashMap<String, Set<Long>>();
 	}
 
 	@Override
 	public long postMessage(String pwd, Message msg) {
 		Log.info("Received request to register a new message (Sender: " + msg.getSender() + "; Subject: "+msg.getSubject()+")");
-		
-		//Check if message is valid, if not return HTTP CONFLICT 409
-		if (msg.getSender() == null || msg.getDestination() == null || msg.getDestination().size() == 0) {
+		if(msg.getSender() == null || msg.getDestination() == null || msg.getDestination().size() == 0) {
 			Log.info("Message was rejected due to lack of recepients.");
 			throw new WebApplicationException( Status.CONFLICT );
 		}
-
-		//Check if user and password are valid
+		
+		//TODO: verifica se user e password sao validos
 		URI[] srvURI = Discovery.knownUrisOf("UserService");
 		RestUserClient ruc = new RestUserClient(srvURI[0]);
-//		Set<String> users = ruc.
-//		if (userInboxs.containsKey(msg.getSender()) || msg.getSender().)
+		if(ruc.getUser(msg.getSender(), pwd) == null) {
+			Log.info("user does not exist or if the pwd is not correct.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
+
+		long newID = 0;
+		synchronized (this) {
+			newID = Math.abs(randomNumberGenerator.nextLong());
+			while(allMessages.containsKey(newID)) {
+				newID = Math.abs(randomNumberGenerator.nextLong());
+			}
+			allMessages.put(newID, msg);
+		}
+
+		Log.info("Created new message with id: " + newID);
+		synchronized (this) {
+			for(String recipient: msg.getDestination()) {
+				if(!userInboxs.containsKey(recipient))
+					userInboxs.put(recipient, new HashSet<Long>());
+				userInboxs.get(recipient).add(newID);
+			}
+		}
 			
-		return 0;
+		Log.info("Recorded message with identifier: " + newID);
+		return newID;
 	}
 
 	@Override
 	public Message getMessage(String user, long mid, String pwd) {
-		// TODO Auto-generated method stub
-		return null;
+		Log.info("Received request for message with id: "+ mid);
+		
+		URI[] srvURI = Discovery.knownUrisOf("UserService");
+		RestUserClient ruc = new RestUserClient(srvURI[0]);
+		if (ruc.getUser(user, pwd) == null) {
+			Log.info("user does not exist or if the pwd is not correct.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
+		
+		Message m = null;
+		//TODO: verificar mensagem no inbox do user
+		synchronized (this) {
+			 if (userInboxs.containsValue(mid))
+				 m = allMessages.get(mid);
+		}
+		if (m == null) {
+			Log.info("Requested message does not exist.");
+			throw new WebApplicationException( Status.NOT_FOUND );
+		}
+		Log.info("Returning requested message to user.");
+		return m;
 	}
 
 	@Override

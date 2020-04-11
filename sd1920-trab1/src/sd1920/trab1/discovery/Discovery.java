@@ -6,8 +6,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -30,8 +30,8 @@ public class Discovery {
 		// summarizes the logging format
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s");
 	}
-	
-	
+
+
 	// The pre-aggreed multicast endpoint assigned to perform discovery. 
 	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
 	static final int DISCOVERY_PERIOD = 1000;
@@ -43,7 +43,9 @@ public class Discovery {
 	private static InetSocketAddress addr;
 	private static String serviceName;
 	private static String serviceURI;
-	static Set<URI> set;
+	//	static Set<URI> set;
+	private static Map<String, Map<URI, Long>> chmap;
+	private static Map<URI,Long> chmap2;
 
 	/**
 	 * @param  serviceName the name of the service to announce
@@ -54,13 +56,13 @@ public class Discovery {
 		this.serviceName = serviceName;
 		this.serviceURI  = serviceURI;
 	}
-	
+
 	/**
 	 * Starts sending service announcements at regular intervals... 
 	 */
 	public static void start() {
 		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s", addr, serviceName, serviceURI));
-		
+
 		byte[] announceBytes = String.format("%s%s%s", serviceName, DELIMITER, serviceURI).getBytes();
 		DatagramPacket announcePkt = new DatagramPacket(announceBytes, announceBytes.length, addr);
 
@@ -80,10 +82,10 @@ public class Discovery {
 					}
 				}
 			}).start();
-			
+
 			// start thread to reply to clients and to collect
 			new Thread(() -> {
-				set = new HashSet<URI>();
+				//				set = new HashSet<URI>();
 				DatagramPacket pkt = new DatagramPacket(new byte[1024], 1024);
 				for (;;) {
 					try {
@@ -93,17 +95,21 @@ public class Discovery {
 						String[] msgElems = msg.split(DELIMITER);
 						long startTime = 0L;
 						if( msgElems.length == 2) {	//periodic announcement
-							URI u = URI.create(msgElems[1]);
-							if (set.contains(u) && msgElems[0].equals(serviceName)) {
-								set.add(u);
-								ms.setSoTimeout(DISCOVERY_TIMEOUT);
-								startTime = System.currentTimeMillis();
-							} else {
-								ms.setSoTimeout((int) (DISCOVERY_TIMEOUT - (System.currentTimeMillis()-startTime))); 
-							}
-							System.out.printf( "FROM %s (%s) : %s\n", pkt.getAddress().getHostName(), 
+							System.out.printf( "FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(), 
 									pkt.getAddress().getHostAddress(), msg);
-							//TODO: to complete by recording the received information
+
+							// to complete by recording the received information
+							startTime = System.currentTimeMillis();
+							URI uri = URI.create(msgElems[1]);
+							System.out.println("My output > Service: "+ msgElems[0] +" URI:"+ uri +" Time received: "+startTime);
+							chmap = new ConcurrentHashMap<String, Map<URI, Long>>();
+							chmap2 = new ConcurrentHashMap<URI, Long>();
+							chmap2.put(uri, startTime);
+							chmap.putIfAbsent(msgElems[0], chmap2);
+							ms.setSoTimeout(DISCOVERY_TIMEOUT);
+							startTime = System.currentTimeMillis();
+						} else {
+							ms.setSoTimeout((int) (DISCOVERY_TIMEOUT - (System.currentTimeMillis()-startTime))); 
 						}
 					} catch (IOException e) {
 						// do nothing
@@ -123,13 +129,14 @@ public class Discovery {
 	 * 
 	 */
 	public static URI[] knownUrisOf(String serviceName) {
-		URI[] uris = set.toArray(new URI[set.size()]);
+		//URI[] uris = set.toArray(new URI[set.size()]);
+		URI[] uris = chmap.get(serviceName).keySet().toArray( new URI[chmap.get(serviceName).values().size()] );
 		return uris;
 	}	
-	
+
 	// Main just for testing purposes
 	public static void main( String[] args) throws Exception {
-		//TODO: ?
+		//TODO: main do discovery
 		Discovery discovery = new Discovery( DISCOVERY_ADDR, "MessageService", "http://" + InetAddress.getLocalHost().getHostAddress());
 		Discovery.start();
 	}
