@@ -38,9 +38,8 @@ public class MessageRestServer {
 			Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
 
 			// More code can be executed here...
-			Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
 			//TODO: messageServer
-			discovery.start();
+			Discovery.start();
 	}
 
 }

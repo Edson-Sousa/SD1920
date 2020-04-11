@@ -38,9 +38,8 @@ public class UserRestServer {
 			Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
 
 			// More code can be executed here...
-			Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
 			//TODO: userServer
-			discovery.start();
+			Discovery.start();
 	}
 
 }

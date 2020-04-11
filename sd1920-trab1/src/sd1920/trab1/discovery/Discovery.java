@@ -6,8 +6,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.URI;
-import java.util.Map;
+import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 /**
@@ -43,31 +44,31 @@ public class Discovery {
 	private static InetSocketAddress addr;
 	private static String serviceName;
 	private static String serviceURI;
-	//	static Set<URI> set;
-	private static Map<String, Map<URI, Long>> chmap;
-	private static Map<URI,Long> chmap2;
+	//	static Map;
+	private static ConcurrentMap<String, URI> domainURIs;
 
 	/**
 	 * @param  serviceName the name of the service to announce
 	 * @param  serviceURI an uri string - representing the contact endpoint of the service being announced
+	 * @throws UnknownHostException 
 	 */
-	public Discovery( InetSocketAddress addr, String serviceName, String serviceURI) {
-		this.addr = addr;
-		this.serviceName = serviceName;
-		this.serviceURI  = serviceURI;
+	public Discovery() throws UnknownHostException {
+		domainURIs = new ConcurrentHashMap<String, URI>();
+		this.addr = DISCOVERY_ADDR;
+		this.serviceName = InetAddress.getLocalHost().getHostName();
+		this.serviceURI  = "http://" + InetAddress.getLocalHost().getHostAddress() + "/rest";
 	}
 
 	/**
 	 * Starts sending service announcements at regular intervals... 
 	 */
 	public static void start() {
-		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s", addr, serviceName, serviceURI));
-
+Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s", addr, serviceName, serviceURI));
+		
 		byte[] announceBytes = String.format("%s%s%s", serviceName, DELIMITER, serviceURI).getBytes();
 		DatagramPacket announcePkt = new DatagramPacket(announceBytes, announceBytes.length, addr);
 
 		try {
-			@SuppressWarnings("resource")
 			MulticastSocket ms = new MulticastSocket( addr.getPort());
 			ms.joinGroup(addr.getAddress());
 			// start thread to send periodic announcements
@@ -85,7 +86,6 @@ public class Discovery {
 
 			// start thread to reply to clients and to collect
 			new Thread(() -> {
-				//				set = new HashSet<URI>();
 				DatagramPacket pkt = new DatagramPacket(new byte[1024], 1024);
 				for (;;) {
 					try {
@@ -102,12 +102,11 @@ public class Discovery {
 							startTime = System.currentTimeMillis();
 							URI uri = URI.create(msgElems[1]);
 							System.out.println("My output > Service: "+ msgElems[0] +" URI:"+ uri +" Time received: "+startTime);
-							chmap = new ConcurrentHashMap<String, Map<URI, Long>>();
-							chmap2 = new ConcurrentHashMap<URI, Long>();
-							chmap2.put(uri, startTime);
-							chmap.putIfAbsent(msgElems[0], chmap2);
+							domainURIs.put(msgElems[0], uri);
 							ms.setSoTimeout(DISCOVERY_TIMEOUT);
 							startTime = System.currentTimeMillis();
+							System.out.printf( "FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(), 
+									pkt.getAddress().getHostAddress(), msg);		
 						} else {
 							ms.setSoTimeout((int) (DISCOVERY_TIMEOUT - (System.currentTimeMillis()-startTime))); 
 						}
@@ -130,14 +129,15 @@ public class Discovery {
 	 */
 	public static URI[] knownUrisOf(String serviceName) {
 		//URI[] uris = set.toArray(new URI[set.size()]);
-		URI[] uris = chmap.get(serviceName).keySet().toArray( new URI[chmap.get(serviceName).values().size()] );
-		return uris;
+		URI[] uri = new URI[1];
+		uri[0] = domainURIs.get(serviceName);
+		return uri;
 	}	
 
 	// Main just for testing purposes
 	public static void main( String[] args) throws Exception {
 		//TODO: main do discovery
-		Discovery discovery = new Discovery( DISCOVERY_ADDR, "MessageService", "http://" + InetAddress.getLocalHost().getHostAddress());
+//		Discovery discovery = new Discovery();
 		Discovery.start();
 	}
 }
