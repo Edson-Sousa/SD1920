@@ -20,7 +20,7 @@ public class UserRestResource implements UserService{
 	private static Logger Log = Logger.getLogger(UserRestResource.class.getName());
 
 
-	public UserRestResource() throws UnknownHostException {
+	public UserRestResource(String serverURI) throws UnknownHostException {
 		this.allUsers =  new ConcurrentHashMap<String, User>();
 		this.domain = InetAddress.getLocalHost().getHostName();
 		Log.info("Setting up new User server at " + domain);
@@ -29,33 +29,44 @@ public class UserRestResource implements UserService{
 	@Override
 	public String postUser(User user) {
 
-		Log.info("Received request to register user: " + user.getName());
-		if(!user.getName().equals(null)		&&		   
-				!user.getDomain().equals(null)	&&
-				!user.getPwd().equals(null))		{
+		if(user != null){
 
-			if(!user.getDomain().equals(domain)){
 
-				synchronized(this){
-					if(!allUsers.containsKey(user.getName())){
+			if(user.getName() != null && user.getName().length() != 0
+					&& user.getPwd() != null && user.getPwd().length() != 0
+					&& user.getDomain() != null && user.getDomain().length() != 0){
+				Log.info("Received request to register user: " + user.getName() + ", "
+						+ user.getPwd() + ", "
+						+ user.getDomain() + ", "
+						+ user.getDisplayName());
 
-						Log.warning("User " + user.getName() + "successfully created");
-						allUsers.put(user.getName(), user);
-						return (Status.OK + ": " + user.getName() + "@" + user.getDomain());
+				if(user.getDomain().equals(domain)){
 
-					} else {
-						Log.warning("User already exists.");
-						throw new WebApplicationException( Status.CONFLICT );
+					synchronized(this){
+						if(!allUsers.containsKey(user.getName())){
+
+							Log.info("User " + user.getName() + " successfully created");
+							allUsers.put(user.getName(), user);
+							return (user.getName() + "@" + user.getDomain());
+
+						} else {
+							Log.warning("User already exists.");
+							throw new WebApplicationException( Status.CONFLICT );
+						}
 					}
+
+				} else {
+					Log.warning("The domain in the user does not match the domain of the server");
+					throw new WebApplicationException( Status.FORBIDDEN );
 				}
 
 			} else {
-				Log.warning("The domain in the user does not match the domain of the server");
-				throw new WebApplicationException( Status.FORBIDDEN );
+				Log.warning("Either name, password or domain are null");
+				throw new WebApplicationException( Status.CONFLICT );
 			}
 
-		} else {
-			Log.warning("Either name, password, or domain are null");
+		} else{
+			Log.warning("User object is null");
 			throw new WebApplicationException( Status.CONFLICT );
 		}
 	}
@@ -64,114 +75,102 @@ public class UserRestResource implements UserService{
 	public User getUser(String name, String pwd) {
 
 		Log.info("Received request to return user: " + name + "and password: " + pwd);
-		if(!name.equals(null) && !pwd.equals(null)){
 
-			synchronized(this) {
+		synchronized(this) {
 
-				User user = allUsers.get(name);
-				if(user != null){
+			User user = allUsers.get(name);
+			if(user != null){
 
-					if(user.getPwd().equals(pwd)){
+				if(pwd != null && user.getPwd().equals(pwd)){
 
-						Log.info("Operation Successfull. Returning user: " + user.getName());
-						return user;
-
-					} else {
-						Log.warning("Password is incorrect");
-						throw new WebApplicationException( Status.CONFLICT );
-					}
+					Log.info("Operation Successfull. Returning user: " + user.getName());
+					return user;
 
 				} else {
-					Log.warning("User does not exist.");
-					throw new WebApplicationException( Status.CONFLICT );
+					Log.warning("Password is incorrect");
+					throw new WebApplicationException( Status.FORBIDDEN );
 				}
-			}
 
-		} else {
-			Log.warning("Either name, password are null.");
-			throw new WebApplicationException( Status.CONFLICT );
+			} else {
+				Log.warning("User does not exist.");
+				throw new WebApplicationException( Status.FORBIDDEN );
+			}
 		}
 	}
 
 	@Override
 	public User updateUser(String name, String pwd, User user) {
+		Log.info("Received request to update user: " + name + " and password: " + pwd);
 
-		Log.info("Received request to update user: " + name + "and password: " + pwd);
-		if(!name.equals(null) && !pwd.equals(null) && user!= null){
+		synchronized(this){
 
-			synchronized(this){
+			User update = allUsers.get(name);
+			if(update != null){
 
-				User update = allUsers.get(name);
-				if(update != null){
+				if(pwd != null && update.getPwd().equals(pwd)){
 
-					if(update.getPwd().equals(pwd)){
+					if(user != null){
+						Log.info("Received request to update user: " + user.getName() + ", "
+								+ user.getPwd() + ", "
+								+ user.getDomain() + ", "
+								+ user.getDisplayName());
 
-						if(user.getName().equals(null) && user.getDomain().equals(null)){
-
-							if(!user.getPwd().equals(null)){
-								update.setPwd(user.getPwd());
-							}
-
-							if(!user.getDisplayName().equals(null)){
-								update.setDisplayName(user.getDisplayName());
-							}
-
-							Log.info("Operation Successfull. Updated user: " + user.getName());
-							return update;
-
-						} else {
-							Log.warning("Users cannot change name or domain");
-							throw new WebApplicationException( Status.CONFLICT );
+						if(user.getPwd() != null){
+							update.setPwd(user.getPwd());
 						}
 
-					} else {
-						Log.warning("Password is incorrect");
+						if(user.getDisplayName() != null){
+							update.setDisplayName(user.getDisplayName());
+						}
+
+						allUsers.put(update.getName(), update);
+						Log.info("Operation Successfull. Updated user: " + update.getName());
+						return update;
+
+					} else{
+						Log.warning("User update object is null");
 						throw new WebApplicationException( Status.CONFLICT );
 					}
 
 				} else {
-					Log.warning("User does not exist.");
-					throw new WebApplicationException( Status.CONFLICT );
+					Log.warning("Password is incorrect");
+					throw new WebApplicationException( Status.FORBIDDEN );
 				}
-			}
 
-		} else {
-			Log.warning("Either name, password or user data are null.");
-			throw new WebApplicationException( Status.CONFLICT );
+			} else {
+				Log.warning("User does not exist.");
+				throw new WebApplicationException( Status.FORBIDDEN );
+			}
 		}
+
 	}
 
 	@Override
 	public User deleteUser(String name, String pwd) {
 
-		Log.info("Received request to delete user: " + name);
-		if(!name.equals(null) && !pwd.equals(null)){
+		Log.info("Received request to delete user: " + name + " password: " + pwd);
 
-			synchronized (this){
+		synchronized (this){
 
-				User test = allUsers.get(name);
-				if(test != null){
+			User test = allUsers.get(name);
+			if(test != null){
 
-					if(!pwd.equals(test.getPwd())){
+				if(pwd != null && pwd.equals(test.getPwd())){
 
-						Log.warning("User " + name + "successfully removed");
-						return allUsers.remove(name);
+					Log.warning("User " + name + " successfully removed");
+					return allUsers.remove(name);
 
-					} else {
-						Log.warning("Password is incorrect");
-						throw new WebApplicationException( Status.CONFLICT );
-					}
-					//
 				} else {
-					Log.warning("User does not exist.");
-					throw new WebApplicationException( Status.CONFLICT );
+					Log.warning("Password is incorrect");
+					throw new WebApplicationException( Status.FORBIDDEN );
 				}
+				//
+			} else {
+				Log.warning("User does not exist.");
+				throw new WebApplicationException( Status.FORBIDDEN );
 			}
-
-		} else {
-			Log.warning("Either name or password are null");
-			throw new WebApplicationException( Status.CONFLICT );
 		}
+
 	}
 
 }

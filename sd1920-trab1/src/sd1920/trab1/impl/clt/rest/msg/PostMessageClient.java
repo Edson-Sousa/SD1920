@@ -38,6 +38,9 @@ public class PostMessageClient {
 		System.out.println("Provide sender username:");
 		String sender = sc.nextLine();
 		
+		System.out.println("Provide sender user password:");
+		String password = sc.nextLine();
+		
 		System.out.println("Provide destination username(s) -- separated by commas:");
 		Set<String> destinations = new HashSet<String>();
 		for(String s: sc.nextLine().split(",")) {
@@ -78,12 +81,12 @@ public class PostMessageClient {
 		
 		while(!success && retries < MAX_RETRIES) {
 			try {
-				Response r = target.request()
-						.accept(MediaType.APPLICATION_JSON)
+				Response r = target.queryParam("password", password)
+						.request().accept(MediaType.APPLICATION_JSON)
 						.post(Entity.entity(m, MediaType.APPLICATION_JSON));
 		
 				if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
-					System.out.println("Success, message posted with id: " + r.readEntity(Long.class) );
+					System.out.println( r.getStatus() + r.readEntity(Long.class) );
 				else
 					System.out.println("Error, HTTP error status: " + r.getStatus() );
 				

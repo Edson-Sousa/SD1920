@@ -17,7 +17,7 @@ public interface UserServiceSoap {
 	/**
 	 * Creates a new user in the local domain.
 	 * @param user User to be created
-	 * @return 200: the address of the user (name@domain).
+	 * @return the address of the user (name@domain).
 	 * @throws MessagesException in case of error.
 	 */
 	@WebMethod
@@ -41,8 +41,8 @@ public interface UserServiceSoap {
 	 * @param pwd password of the user (or a special password)
 	 * @param user Updated information
 	 * @return the updated user object, if the name exists and pwd matches the existing password 
-	 * (or is the a special password allowing all operations);
-	 * 409 otherwise
+	 * (or is the a special password allowing all operations).
+	 * @throws MessagesException in case of error.
 	 */
 	@WebMethod
 	public User updateUser(String name, String pwd, User user)  throws MessagesException;

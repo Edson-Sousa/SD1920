@@ -21,9 +21,9 @@ public interface UserService {
 	/**
 	 * Creates a new user in the local domain.
 	 * @param user User to be created
-	 * @return 200: the address of the user (name@domain).
-	 * 403 if the domain in the user does not match the domain of the server
-	 * 409 if either name, pwd, or domain and null
+	 * @return 200 the address of the user (name@domain). 
+	 * 			403 if the domain in the user does not match the domain of the server 
+	 * 			409 otherwise
 	 */
 	@POST
 	@Path("/")
@@ -35,8 +35,10 @@ public interface UserService {
 	 * Obtains the information on the user identified by name
 	 * @param name the name of the user
 	 * @param pwd password of the user
-	 * @return the user object, if the name exists and pwd matches the existing password 
-	 * 409 otherwise
+	 * @return 200 the user object, if the name exists and pwd matches the existing
+	 *         password
+	 *         403 if the password is incorrect or the user does not exist 
+	 *         409 otherwise
 	 */
 	@GET
 	@Path("/{name}")
@@ -49,8 +51,10 @@ public interface UserService {
 	 * @param name the name of the user
 	 * @param pwd password of the user
 	 * @param user Updated information
-	 * @return the updated user object, if the name exists and pwd matches the existing password 
-	 * 409 otherwise
+	 * @return 200 the updated user object, if the name exists and pwd matches the
+	 *         existing password 
+	 *         403 if the password is incorrect or the user does not exist 
+	 *         409 otherwise
 	 */
 	@PUT
 	@Path("/{name}")
@@ -62,8 +66,10 @@ public interface UserService {
 	 * Deletes the user identified by name
 	 * @param name the name of the user
 	 * @param pwd password of the user
-	 * @return the deleted user object, if the name exists and pwd matches the existing password 
-	 * 409 otherwise
+	 * @return 200 the deleted user object, if the name exists and pwd matches the
+	 *         existing password 
+	 *         403 if the password is incorrect or the user does not exist 
+	 *         409 otherwise
 	 */
 	@DELETE
 	@Path("/{name}")

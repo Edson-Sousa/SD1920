@@ -14,9 +14,7 @@ import javax.ws.rs.core.Response.Status;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
-import sd1920.trab1.api.Message;
 import sd1920.trab1.api.rest.MessageService;
-import sd1920.trab1.api.MessageUtills;
 
 public class GetMessageClient {
 
@@ -32,9 +30,15 @@ public class GetMessageClient {
 		//You should replace this by the discovery class developed last week
 		System.out.println("Provide the server url:");
 		String serverUrl = sc.nextLine();
+		
+		System.out.println("Provide the user:");
+		String username = sc.nextLine();
 
 		System.out.println("Provide message identifier:");
 		String mid = "" + Long.parseLong(sc.nextLine());
+		
+		System.out.println("Provide the user password:");
+		String password = sc.nextLine();
 
 		sc.close();
 
@@ -55,15 +59,13 @@ public class GetMessageClient {
 		while(!success && retries < MAX_RETRIES) {
 			try {
 
-				Response r = target.path(mid).request()
-						.accept(MediaType.APPLICATION_JSON)
+				Response r = target.path(username).path(mid).queryParam("password", password)
+						.request().accept(MediaType.APPLICATION_JSON)
 						.get();
 
-				if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() ) {
-					System.out.println("Success:");
-					Message m = r.readEntity(Message.class);
-					MessageUtills.printMessage(m);	
-				} else
+				if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
+					System.out.println( r.getStatus() );
+				else
 					System.out.println("Error, HTTP error status: " + r.getStatus() );
 
 				success = true;

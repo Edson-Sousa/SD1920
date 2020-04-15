@@ -39,7 +39,8 @@ public class MessageRestServer {
 
 			// More code can be executed here...
 			//TODO: messageServer
-			Discovery.start();
+			discovery = new Discovery(SERVICE, serverURI);
+			discovery.start();
 	}
 
 }
