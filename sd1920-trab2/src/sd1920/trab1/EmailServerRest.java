@@ -4,10 +4,16 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+
+import sd1920.trab1.util.InsecureHostnameVerifier;
 import sd1920.trab1.impl.MessageResource;
 import sd1920.trab1.impl.UserResource;
 
@@ -26,14 +32,24 @@ public class EmailServerRest {
         InetAddress localHost = InetAddress.getLocalHost();
         String ip = localHost.getHostAddress();
         String domain = localHost.getHostName();
+        
+        //
+		HttpsURLConnection.setDefaultHostnameVerifier(new InsecureHostnameVerifier());
 
-        URI serverURI = URI.create(String.format("http://%s:%s/rest", ip, PORT));
+        URI serverURI = URI.create(String.format("https://%s:%s/rest", ip, PORT));
 
         ResourceConfig config = new ResourceConfig();
         config.register(new MessageResource(domain, serverURI, ByteBuffer.wrap(localHost.getAddress()).getInt()));
         config.register(new UserResource(domain, serverURI));
 
-        JdkHttpServerFactory.createHttpServer(serverURI, config);
+        //
+        try {
+        	JdkHttpServerFactory.createHttpServer(serverURI, config, SSLContext.getDefault());
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("Invalid SSLL/TLS configuration.");
+			e.printStackTrace();
+			System.exit(1);
+		}
 
         Discovery.startAnnounce(domain, serverURI);
         Discovery.startDiscovery();

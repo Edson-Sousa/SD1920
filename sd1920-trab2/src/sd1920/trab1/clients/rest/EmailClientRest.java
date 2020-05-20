@@ -4,7 +4,9 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import sd1920.trab1.clients.EmailResponse;
 import sd1920.trab1.clients.MessagesEmailClient;
+import sd1920.trab1.util.InsecureHostnameVerifier;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -25,7 +27,7 @@ public abstract class EmailClientRest {
     int maxRetries;
     int retryPeriod;
 
-    public EmailClientRest(URI serverUrl, int maxRetries, int retryPeriod, String resourceUrl){
+    public EmailClientRest(URI serverUrl, int maxRetries, int retryPeriod, String resourceUrl){    	
         ClientConfig config = new ClientConfig();
         config.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
         config.property(ClientProperties.READ_TIMEOUT, REPLY_TIMEOUT);
