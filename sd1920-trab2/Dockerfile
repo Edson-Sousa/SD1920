@@ -17,8 +17,8 @@ COPY truststore.ks truststore.ks
 COPY messages.props messages.props
 
 # run Discovery when starting the docker image
-CMD ["java", "-Djavax.net.ssl.keyStore=/home/git/SD1920/sd1920-trab2/server.ks"
-			 "-Djavax.net.ssl.keyStorePassword=password"
-			 "-Djavax.net.ssl.trustStore=/home/git/SD1920/sd1920-trab2/truststore.ks"
-			 "-Djavax.net.ssl.trustStorePassword=changeit"
+CMD ["java", "-Djavax.net.ssl.keyStore=/home/git/SD1920/sd1920-trab2/server.ks"\
+			 "-Djavax.net.ssl.keyStorePassword=password"\
+			 "-Djavax.net.ssl.trustStore=/home/git/SD1920/sd1920-trab2/truststore.ks"\
+			 "-Djavax.net.ssl.trustStorePassword=changeit"\
 			 "-cp", "/home/sd/sd1920.jar", "sd1920.trab1.EmailServerRest"]

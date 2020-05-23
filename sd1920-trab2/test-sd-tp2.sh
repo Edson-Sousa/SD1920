@@ -10,8 +10,8 @@ then
 		exit 1
 fi 
 
-#docker pull nunopreguica/sd1920-tester-tp1
+docker pull nunopreguica/sd1920-tester-tp2:latest
 
 #execute the client with the given command line parameters
-docker run --rm --network=sdnet -it -v /var/run/docker.sock:/var/run/docker.sock nunopreguica/sd1920-tester-tp1 $*
+docker run --rm --network=sdnet -it -v /var/run/docker.sock:/var/run/docker.sock nunopreguica/sd1920-tester-tp2:latest $*
 
