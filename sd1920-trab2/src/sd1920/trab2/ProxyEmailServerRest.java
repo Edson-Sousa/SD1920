@@ -17,6 +17,7 @@ import sd1920.trab1.Discovery;
 import sd1920.trab1.impl.MessageResource;
 import sd1920.trab1.impl.UserResource;
 import sd1920.trab1.util.InsecureHostnameVerifier;
+import sd1920.trab2.dropbox.CreateDirectory;
 import sd1920.trab2.impl.ProxyMessageResource;
 import sd1920.trab2.impl.ProxyUserResource;
 
@@ -40,7 +41,6 @@ public class ProxyEmailServerRest {
 
         URI serverURI = URI.create(String.format("https://%s:%s/rest", ip, PORT));
 
-        //TODO: parte de resource config
         ResourceConfig config = new ResourceConfig();
         config.register(new ProxyMessageResource(domain, serverURI, ByteBuffer.wrap(localHost.getAddress()).getInt()));
         config.register(new ProxyUserResource(domain, serverURI));
@@ -55,6 +55,15 @@ public class ProxyEmailServerRest {
         
         Discovery.startAnnounce(domain, serverURI);
         Discovery.startDiscovery();
+        
+        //Criar uma pasta na dropbox com o mesmo nome do dominio do servidor
+        String directory = "/SD2020/"+domain;
+        CreateDirectory nd = new CreateDirectory();
+        boolean success = nd.execute(directory);
+        if(success)
+			System.out.println("Directory '" + directory + "' created successfuly.");
+		else
+			System.out.println("Failed to create directory '" + directory + "'");
         
         //Criar pasta na Dropbox com o nome do dominio se nao existir
         Log.info(String.format("%s REST Server ready @ %s\n", domain, serverURI));
