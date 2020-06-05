@@ -2,10 +2,10 @@ package sd1920.trab2.dropbox.arguments;
 
 public class DownloadFileArgs {
 	
-	String filename;
+	final String path;
 
-	public DownloadFileArgs(String filename) {
-		this.filename = filename;
+	public DownloadFileArgs(String path) {
+		this.path = path;
 	}
 
 }

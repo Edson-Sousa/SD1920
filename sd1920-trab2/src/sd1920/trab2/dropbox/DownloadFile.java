@@ -1,7 +1,5 @@
 package sd1920.trab2.dropbox;
 
-import java.util.Scanner;
-
 import org.pac4j.scribe.builder.api.DropboxApi20;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -22,8 +20,6 @@ public class DownloadFile {
 	private static final String accessTokenStr = "6NNhCP3syewAAAAAAAADPE6mm8b-AciraA4j23uulYCWRr61F74uhnWzWmzNGR2W";
 
 	protected static final String OCTET_CONTENT_TYPE = "application/octet-stream; charset=utf-8";
-
-	protected static final String JSON_CONTENT_TYPE = "application/json; charset=utf-8";
 
 	private static final String DOWNLOAD_FILE_URL = "https://content.dropboxapi.com/2/files/download";
 
@@ -58,7 +54,7 @@ public class DownloadFile {
 				return null;
 			}
 			
-			DownloadFileReturn reply = json.fromJson(r.getBody(), DownloadFileReturn.class);
+			DownloadFileReturn reply = json.fromJson(r.getHeader("dropbox-api-result"), DownloadFileReturn.class);
 			fileContent = reply.toString();
 
 		} catch (Exception e) {
@@ -68,7 +64,7 @@ public class DownloadFile {
 		
 		return fileContent;
 	}
-	
+/*	
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		
@@ -78,10 +74,11 @@ public class DownloadFile {
 		String nameOfFile = sc.nextLine().trim();
 		sc.close();
 		String success = df.execute(nameOfFile);
-		if (success != null)
+		if (success != null) {
 			System.out.println("File '" + nameOfFile + "' downloaded successfully.");
-		else
+			System.out.println(success);
+		} else
 			System.out.println("Failed to download file '" + nameOfFile + "'");
 	}
-
+*/
 }

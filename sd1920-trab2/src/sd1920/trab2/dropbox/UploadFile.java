@@ -43,7 +43,7 @@ public class UploadFile {
 		uploadFile.addHeader("Dropbox-API-Arg", new UploadFileArgs(filename, "add", false, true, false).toString());
 		uploadFile.addHeader("Content-Type", OCTET_CONTENT_TYPE);
 
-		uploadFile.setPayload( );
+//		uploadFile.setPayload( );
 
 		service.signRequest(accessToken, uploadFile);
 
